@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "llm-agents"
+version = "0.1.0"
+description = "Multi-agent LLM system with log-probability support"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy",
+    "openai",
+    "transformers",
+    "torch",
+    "httpx",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+]
+
+[tool.setuptools.packages.find]
+include = ["llm_agents*"]
