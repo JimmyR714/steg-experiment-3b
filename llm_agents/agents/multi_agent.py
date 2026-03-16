@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 import json
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from llm_agents.agents.agent import Agent
 from llm_agents.agents.message_bus import Message, MessageBus
 from llm_agents.agents.task import TaskResult
 from llm_agents.tools.base import Tool
+
+if TYPE_CHECKING:
+    from llm_agents.tracing.tracer import Tracer
 
 
 def _make_send_message_tool(bus: MessageBus, sender_name: str) -> Tool:
@@ -153,7 +156,9 @@ class MultiAgentSystem:
         """Return a mapping of agent names to agents."""
         return dict(self._agents)
 
-    def run_task(self, task: str, coordinator: str) -> TaskResult:
+    def run_task(
+        self, task: str, coordinator: str, tracer: Tracer | None = None
+    ) -> TaskResult:
         """Run a collaborative task.
 
         The *coordinator* agent receives the task as a user message.  During
@@ -166,6 +171,7 @@ class MultiAgentSystem:
         Args:
             task: A natural-language description of the task.
             coordinator: Name of the agent that will orchestrate the task.
+            tracer: Optional :class:`Tracer` for recording execution events.
 
         Returns:
             A :class:`TaskResult` with the final answer and the full trace
@@ -177,8 +183,11 @@ class MultiAgentSystem:
         if coordinator not in self._agents:
             raise KeyError(f"Unknown coordinator agent: {coordinator!r}")
 
+        if tracer:
+            tracer.event("task_start", coordinator, {"task": task})
+
         coord_agent = self._agents[coordinator]
-        coord_response = coord_agent.run(task)
+        coord_response = coord_agent.run(task, tracer=tracer)
 
         # Process pending messages for non-coordinator agents.  Each agent
         # that has pending messages gets to run with those messages as input.
@@ -187,7 +196,15 @@ class MultiAgentSystem:
                 continue
             pending = self.bus.receive(name)
             for msg in pending:
-                agent.run(msg.content)
+                if tracer:
+                    tracer.event("message_delivered", name, {
+                        "from": msg.sender,
+                        "content_length": len(msg.content),
+                    })
+                agent.run(msg.content, tracer=tracer)
+
+        if tracer:
+            tracer.event("task_end", coordinator, {"result_length": len(coord_response.content)})
 
         return TaskResult(
             result=coord_response.content,
