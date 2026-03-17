@@ -24,6 +24,13 @@ from llm_agents.agents.roles import (
 )
 from llm_agents.agents.task import TaskResult
 from llm_agents.agents.team import AgentTeam, code_review_team, debate_team, research_team
+from llm_agents.agents.streaming_agent import StreamingAgent
+from llm_agents.agents.fsm import (
+    State,
+    StateMachineAgent,
+    Transition,
+    fsm_to_mermaid,
+)
 
 __all__ = [
     "ANALYST",
@@ -47,9 +54,14 @@ __all__ = [
     "TaskResult",
     "ToolCallRecord",
     "WRITER",
+    "State",
+    "StateMachineAgent",
+    "StreamingAgent",
+    "Transition",
     "code_review_team",
     "create_agent",
     "debate_team",
+    "fsm_to_mermaid",
     "inject_cot_instruction",
     "parse_thinking",
     "research_team",
