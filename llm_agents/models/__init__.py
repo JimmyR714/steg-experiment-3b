@@ -19,15 +19,32 @@ def __getattr__(name: str):
         return HFModel
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
+from llm_agents.models.streaming import (
+    CollectStreamCallback,
+    PrintStreamCallback,
+    StreamCallback,
+    StreamChunk,
+    StreamingResult,
+    simulate_stream,
+    stream_with_callback,
+)
+
 __all__ = [
     "BaseModel",
+    "CollectStreamCallback",
     "CompletionResult",
     "HFModel",
     "LogProbResult",
     "ModelRegistry",
     "OpenAIModel",
+    "PrintStreamCallback",
+    "StreamCallback",
+    "StreamChunk",
+    "StreamingResult",
     "TokenLogProb",
     "get_model",
     "list_models",
     "register_model",
+    "simulate_stream",
+    "stream_with_callback",
 ]
